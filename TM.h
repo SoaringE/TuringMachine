@@ -6,6 +6,7 @@
 #define TURING_TM_H
 
 #include <iostream>
+#include <fstream>
 #include <regex>
 #include <string>
 #include <vector>
