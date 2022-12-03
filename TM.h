@@ -24,9 +24,11 @@ private:
     char blank;
     set<string> end_states;
     int tape_number;
-    vector<vector<int>> tapes;
+    vector<string> tapes;
     vector<int> positions;
-    map<vector<string>, vector<string>> transitions;
+    vector<int> left_bounds;
+    string current_state;
+    vector<pair<string, string>> transitions;
 public:
     TM() {
         states = set<string>();
@@ -36,10 +38,13 @@ public:
         blank = '_';
         end_states = set<string>();
         tape_number = 1;
-        tapes = vector<vector<int>>(tape_number, vector<int>());
+        tapes = vector<string>(tape_number);
         positions = vector<int>({0});
-        transitions = map<vector<string>, vector<string>>();
+        left_bounds = vector<int>({0});
+        current_state = "0";
+        transitions = vector<pair<string, string>>();
     }
+
     explicit TM(vector<string> &syntax) {
         // TODO: parse syntax
         for (string line : syntax) {
@@ -90,6 +95,7 @@ public:
                             start_state.push_back(line[pos]);
                         ++pos;
                     }
+                    current_state = start_state;
                 } else if (line.find("#B") == 0) {
                     unsigned int pos = line.find('=') + 1;
                     string temp;
@@ -120,11 +126,76 @@ public:
                     }
                     tape_number = stoi(temp);
                 } else {
-
+                    string line_copy = line;
+                    unsigned int pos = line_copy.find(' ');
+                    string old_state = line_copy.substr(0, pos);
+                    old_state.push_back(' ');
+                    line_copy = line_copy.substr(pos + 1);
+                    pos = line_copy.find(' ');
+                    string old_characters = line_copy.substr(0, pos);
+                    transitions.emplace_back(old_state + old_characters, line_copy.substr(pos + 1));
                 }
-                cout << line << endl;
+                // cout << line << endl;
             }
         }
+    }
+
+    void read(string &input) {
+        tapes = vector<string>(tape_number, "___");
+        tapes[0] = "_" + input + "_";
+        positions = vector<int>(tape_number, 1);
+        left_bounds = vector<int>(tape_number, 1);
+        bool stop = false;
+        while (!stop) {
+            string current = current_state + " ";
+            string current_characters;
+            for (int i = 0; i < tape_number; ++i) {
+                current_characters.push_back(tapes[i][positions[i]]);
+            }
+            current += current_characters;
+            unsigned int pos = 0;
+            for (; pos < transitions.size(); ++pos) {
+                string rule = transitions[pos].first;
+                for (int i = 0; i < current.size(); ++i) {
+                    if (rule[i] == '*')
+                        rule[i] = current[i];
+                }
+                if (rule == current)
+                    break;
+            }
+            if (pos == transitions.size()) {
+                stop = true;
+            } else {
+                string target = transitions[pos].second;
+                for (int i = 0; i < tape_number; ++i) {
+                    tapes[i][positions[i]] = target[i] == '*' ? tapes[i][positions[i]] : target[i];
+                    char towards = target[current_characters.length() + 1 + i];
+                    if (towards != 'l' && towards != 'r' && towards != '*') {
+                        cerr << "Invalid direction" << endl;
+                        exit(-1);
+                    }
+                    positions[i] += towards == '*' ? 0 : (towards == 'l' ? -1 : 1);
+                    if (positions[i] == -1) {
+                        tapes[i] = "_" + tapes[i];
+                        positions[i]++;
+                        left_bounds[i]++;
+                    }
+                    if (positions[i] == tapes[i].length())
+                        tapes[i] = tapes[i] + "_";
+                    current_state = target.substr(target.find_last_of(' ') + 1);
+                    // cout << tapes[i] << endl;
+                }
+                // cout << current_state << endl;
+                // cout << endl;
+                if (end_states.find(current_state) != end_states.end())
+                    stop = true;
+            }
+        }
+        for (int i = 0; i < tape_number; ++i) {
+            cout << tapes[i] << endl;
+            // cout << left_bounds[i] << endl;
+        }
+
     }
 };
 

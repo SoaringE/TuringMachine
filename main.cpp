@@ -1,8 +1,9 @@
 #include "TM.h"
 
 int main() {
-    vector<string> syntax;
     string file_name = "palindrome_detector_2tapes.tm";
+    string input = "10001000";
+    vector<string> syntax;
     ifstream in_file(file_name, ios::in);
     if (!in_file) {
         cerr << "Error occurred while opening file " + file_name << endl;
@@ -13,5 +14,6 @@ int main() {
         syntax.push_back(line);
     in_file.close();
     TM tm = TM(syntax);
+    tm.read(input);
     return 0;
 }
