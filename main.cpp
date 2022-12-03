@@ -1,19 +1,17 @@
 #include "TM.h"
 
 int main() {
-    string syntax;
-    string file_name = "/palindrome_detector_2tapes.tm";
+    vector<string> syntax;
+    string file_name = "palindrome_detector_2tapes.tm";
     ifstream in_file(file_name, ios::in);
     if (!in_file) {
         cerr << "Error occurred while opening file " + file_name << endl;
         exit(-1);
     }
-    while (!in_file.eof()) {
-        string temp;
-        in_file >> temp;
-        syntax += temp;
-    }
+    string line;
+    while (getline(in_file, line))
+        syntax.push_back(line);
     in_file.close();
-    cout << syntax << endl;
+    TM tm = TM(syntax);
     return 0;
 }
