@@ -148,6 +148,13 @@ public:
         left_bounds = vector<int>(tape_number, 1);
         bool stop = false;
         while (!stop) {
+            if (verbose) {
+                cout << "Step   : " << step << endl;
+                if (step == 16)
+                    cout << "find" <<endl;
+                step++;
+                cout << "State  : " << current_state << endl;
+            }
             string current = current_state + " ";
             string current_characters;
             for (int i = 0; i < tape_number; ++i) {
@@ -169,6 +176,41 @@ public:
             } else {
                 string target = transitions[pos].second;
                 for (int i = 0; i < tape_number; ++i) {
+                    if (verbose) {
+                        string index = "Index" + to_string(i);
+                        if (i >= 0 && i <= 9)
+                            index.append(" ");
+                        index.append(": ");
+                        string tape = "Tape" + to_string(i);
+                        if (i >= 0 && i <= 9)
+                            tape.append("  ");
+                        else tape.append(" ");
+                        tape.append(": ");
+                        string head = "Head" + to_string(i);
+                        if (i >= 0 && i <= 9)
+                            head.append("  ");
+                        else head.append(" ");
+                        head.append(": ");
+                        int j = min(positions[i], left_bounds[i]);
+                        bool head_appear = false;
+                        do {
+                            int offset = j - left_bounds[i];
+                            index.append(to_string(abs(offset)));
+                            if (abs(offset) >=0 && abs(offset) <= 9)
+                                index.append("  ");
+                            else index.append(" ");
+                            tape.append(1, tapes[i][j]);
+                            tape.append("  ");
+                            if (j == positions[i]) {
+                                head.append("^");
+                                head_appear = true;
+                            }
+                            else head.append(" ");
+                            head.append("  ");
+                            j++;
+                        } while (j <= max(positions[i], (int)tapes[i].length() - 2));
+                        cout << index <<endl << tape << endl << head << endl;
+                    }
                     char writen = target[i] == '*' ? tapes[i][positions[i]] : target[i];
                     tapes[i][positions[i]] = writen;
                     char towards = target[current_characters.length() + 1 + i];
@@ -187,17 +229,20 @@ public:
                     if (positions[i] == tapes[i].length() - 1 && tapes[i][positions[i]] != '_')
                         tapes[i] = tapes[i] + "_";
                     current_state = target.substr(target.find_last_of(' ') + 1);
-                     cout << tapes[i] << endl;
+                    // cout << tapes[i] << endl;
                 }
-                 cout << current_state << endl;
-                 cout << endl;
-                if (end_states.find(current_state) != end_states.end())
+                cout << "---------------------------------------------" << endl;
+                // cout << current_state << endl;
+                // cout << endl;
+                if (end_states.find(current_state) != end_states.end()) {
                     stop = true;
+                    //if (verbose)
+                }
             }
         }
         for (int i = 0; i < tape_number; ++i) {
-             cout << tapes[i] << endl;
-             cout << left_bounds[i] << endl;
+             // cout << tapes[i] << endl;
+             // cout << left_bounds[i] << endl;
             for (char c : tapes[i])
                 if (c != '_')
                     cout << c;
