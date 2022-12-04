@@ -1,9 +1,10 @@
 #include "TM.h"
 
 int main() {
-    string file_name = "../case1.tm";
-    string input = "1001001";
-    bool verbose = true;
+    string file_name = "../case2.tm";
+    string input;
+    input.append(99, '1');
+    bool verbose = false;
     vector<string> syntax;
     ifstream in_file(file_name, ios::in);
     if (!in_file) {
