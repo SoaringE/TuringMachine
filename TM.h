@@ -26,9 +26,55 @@ private:
     int tape_number;
     vector<string> tapes;
     vector<int> positions;
-    vector<int> left_bounds;
+    vector<int> bases;
     string current_state;
     vector<pair<string, string>> transitions;
+    int step;
+
+    void verbose_output() {
+        cout << "Step   : " << step << endl;
+        if (step == 16)
+            cout << "find" <<endl;
+        step++;
+        cout << "State  : " << current_state << endl;
+        for (int i = 0; i < tape_number; ++i) {
+            string index = "Index" + to_string(i);
+            if (i >= 0 && i <= 9)
+                index.append(" ");
+            index.append(": ");
+            string tape = "Tape" + to_string(i);
+            if (i >= 0 && i <= 9)
+                tape.append("  ");
+            else tape.append(" ");
+            tape.append(": ");
+            string head = "Head" + to_string(i);
+            if (i >= 0 && i <= 9)
+                head.append("  ");
+            else head.append(" ");
+            head.append(": ");
+            unsigned int left = 0, right = tapes[i].length() - 1;
+            for (; tapes[i][left] == '_' && left != positions[i] && left <= right; ++left);
+            for (; right >= left && tapes[i][right] == '_' && right != positions[i]; --right);
+            int j = (int)left;
+            do {
+                int offset = j - bases[i];
+                index.append(to_string(abs(offset)));
+                if (abs(offset) >=0 && abs(offset) <= 9)
+                    index.append("  ");
+                else index.append(" ");
+                tape.append(1, tapes[i][j]);
+                tape.append("  ");
+                if (j == positions[i])
+                    head.append("^");
+                else head.append(" ");
+                head.append("  ");
+                j++;
+            } while (j <= right);
+            cout << index <<endl << tape << endl << head << endl;
+        }
+        cout << "---------------------------------------------" << endl;
+    }
+
 public:
     TM() {
         states = set<string>();
@@ -40,13 +86,15 @@ public:
         tape_number = 1;
         tapes = vector<string>(tape_number);
         positions = vector<int>({0});
-        left_bounds = vector<int>({0});
+        bases = vector<int>({0});
         current_state = "0";
         transitions = vector<pair<string, string>>();
+        step = 0;
     }
 
     explicit TM(vector<string> &syntax) {
         // TODO: parse syntax
+        step = 0;
         for (string line : syntax) {
             if (line.empty() or line[line.find_first_not_of(' ')] == ';')
                 continue;
@@ -141,20 +189,13 @@ public:
     }
 
     void read(string &input, bool verbose) {
-        int step = 0;
+        step = 0;
         tapes = vector<string>(tape_number, "___");
         tapes[0] = "_" + input + "_";
         positions = vector<int>(tape_number, 1);
-        left_bounds = vector<int>(tape_number, 1);
+        bases = vector<int>(tape_number, 1);
         bool stop = false;
         while (!stop) {
-            if (verbose) {
-                cout << "Step   : " << step << endl;
-                if (step == 16)
-                    cout << "find" <<endl;
-                step++;
-                cout << "State  : " << current_state << endl;
-            }
             string current = current_state + " ";
             string current_characters;
             for (int i = 0; i < tape_number; ++i) {
@@ -173,44 +214,13 @@ public:
             }
             if (pos == transitions.size()) {
                 stop = true;
+                if (verbose)
+                    verbose_output();
             } else {
+                if (verbose)
+                    verbose_output();
                 string target = transitions[pos].second;
                 for (int i = 0; i < tape_number; ++i) {
-                    if (verbose) {
-                        string index = "Index" + to_string(i);
-                        if (i >= 0 && i <= 9)
-                            index.append(" ");
-                        index.append(": ");
-                        string tape = "Tape" + to_string(i);
-                        if (i >= 0 && i <= 9)
-                            tape.append("  ");
-                        else tape.append(" ");
-                        tape.append(": ");
-                        string head = "Head" + to_string(i);
-                        if (i >= 0 && i <= 9)
-                            head.append("  ");
-                        else head.append(" ");
-                        head.append(": ");
-                        int j = min(positions[i], left_bounds[i]);
-                        bool head_appear = false;
-                        do {
-                            int offset = j - left_bounds[i];
-                            index.append(to_string(abs(offset)));
-                            if (abs(offset) >=0 && abs(offset) <= 9)
-                                index.append("  ");
-                            else index.append(" ");
-                            tape.append(1, tapes[i][j]);
-                            tape.append("  ");
-                            if (j == positions[i]) {
-                                head.append("^");
-                                head_appear = true;
-                            }
-                            else head.append(" ");
-                            head.append("  ");
-                            j++;
-                        } while (j <= max(positions[i], (int)tapes[i].length() - 2));
-                        cout << index <<endl << tape << endl << head << endl;
-                    }
                     char writen = target[i] == '*' ? tapes[i][positions[i]] : target[i];
                     tapes[i][positions[i]] = writen;
                     char towards = target[current_characters.length() + 1 + i];
@@ -222,33 +232,29 @@ public:
                     if (positions[i] == -1) {
                         tapes[i] = "_" + tapes[i];
                         positions[i]++;
-                        left_bounds[i]++;
+                        bases[i]++;
                     }
                     if (positions[i] == tapes[i].length())
                         tapes[i] = tapes[i] + "_";
                     if (positions[i] == tapes[i].length() - 1 && tapes[i][positions[i]] != '_')
                         tapes[i] = tapes[i] + "_";
                     current_state = target.substr(target.find_last_of(' ') + 1);
-                    // cout << tapes[i] << endl;
                 }
-                cout << "---------------------------------------------" << endl;
-                // cout << current_state << endl;
-                // cout << endl;
                 if (end_states.find(current_state) != end_states.end()) {
                     stop = true;
-                    //if (verbose)
+                    if (verbose)
+                        verbose_output();
                 }
             }
         }
-        for (int i = 0; i < tape_number; ++i) {
-             // cout << tapes[i] << endl;
-             // cout << left_bounds[i] << endl;
-            for (char c : tapes[i])
-                if (c != '_')
-                    cout << c;
-            if (i == 0)
-                cout << endl;
+        unsigned int left = 0, right = tapes[0].length() - 1;
+        for (; left <= right && tapes[0][left] == '_'; ++left);
+        for (; right >= left && tapes[0][right] == '_'; --right);
+        if (verbose) {
+            cout << "Result: "<< tapes[0].substr(left, right - left + 1) << endl;
+            cout << "==================== END ====================";
         }
+        else cout << tapes[0].substr(left, right - left + 1) << endl;
 
     }
 };
