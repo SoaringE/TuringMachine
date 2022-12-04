@@ -194,6 +194,31 @@ public:
         tapes[0] = "_" + input + "_";
         positions = vector<int>(tape_number, 1);
         bases = vector<int>(tape_number, 1);
+        string pointer;
+        for (char c : input) {
+            if (input_alphabet.find(c) == input_alphabet.end()) {
+                pointer.append("^");
+                if (verbose) {
+                    cerr << "Input: " << input << endl;
+                    cerr << "==================== ERR ====================" << endl;
+                    cerr << "error: " << '\'' << c << '\'' << " was not declared in the set of input symbols" << endl;
+                    cerr << "Input: " << input << endl;
+                    cerr << "       " << pointer << endl;
+                    cerr << "==================== END ====================" << endl;
+                    exit(-1);
+                } else {
+                    cerr << "illegal input" << endl;
+                    exit(-1);
+                }
+            } else {
+                pointer.append(" ");
+            }
+        }
+        if (verbose) {
+            cout << "Input: " << input << endl;
+            cout << "==================== RUN ====================" << endl;
+        }
+
         bool stop = false;
         while (!stop) {
             string current = current_state + " ";
