@@ -1,7 +1,7 @@
 #include "TM.h"
 
 int main() {
-    string file_name = "../palindrome_detector_2tapes.tm";
+    string file_name = "../case1.tm";
     string input = "1001001";
     bool verbose = true;
     vector<string> syntax;
