@@ -140,7 +140,8 @@ public:
         }
     }
 
-    void read(string &input) {
+    void read(string &input, bool verbose) {
+        int step = 0;
         tapes = vector<string>(tape_number, "___");
         tapes[0] = "_" + input + "_";
         positions = vector<int>(tape_number, 1);
@@ -168,7 +169,8 @@ public:
             } else {
                 string target = transitions[pos].second;
                 for (int i = 0; i < tape_number; ++i) {
-                    tapes[i][positions[i]] = target[i] == '*' ? tapes[i][positions[i]] : target[i];
+                    char writen = target[i] == '*' ? tapes[i][positions[i]] : target[i];
+                    tapes[i][positions[i]] = writen;
                     char towards = target[current_characters.length() + 1 + i];
                     if (towards != 'l' && towards != 'r' && towards != '*') {
                         cerr << "Invalid direction" << endl;
@@ -182,18 +184,25 @@ public:
                     }
                     if (positions[i] == tapes[i].length())
                         tapes[i] = tapes[i] + "_";
+                    if (positions[i] == tapes[i].length() - 1 && tapes[i][positions[i]] != '_')
+                        tapes[i] = tapes[i] + "_";
                     current_state = target.substr(target.find_last_of(' ') + 1);
-                    // cout << tapes[i] << endl;
+                     cout << tapes[i] << endl;
                 }
-                // cout << current_state << endl;
-                // cout << endl;
+                 cout << current_state << endl;
+                 cout << endl;
                 if (end_states.find(current_state) != end_states.end())
                     stop = true;
             }
         }
         for (int i = 0; i < tape_number; ++i) {
-            cout << tapes[i] << endl;
-            // cout << left_bounds[i] << endl;
+             cout << tapes[i] << endl;
+             cout << left_bounds[i] << endl;
+            for (char c : tapes[i])
+                if (c != '_')
+                    cout << c;
+            if (i == 0)
+                cout << endl;
         }
 
     }

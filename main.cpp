@@ -3,6 +3,7 @@
 int main() {
     string file_name = "palindrome_detector_2tapes.tm";
     string input = "10001000";
+    bool verbose = false;
     vector<string> syntax;
     ifstream in_file(file_name, ios::in);
     if (!in_file) {
@@ -14,6 +15,6 @@ int main() {
         syntax.push_back(line);
     in_file.close();
     TM tm = TM(syntax);
-    tm.read(input);
+    tm.read(input, verbose);
     return 0;
 }
