@@ -1,8 +1,8 @@
 #include "TM.h"
 
 int main() {
-    string file_name = "palindrome_detector_2tapes.tm";
-    string input = "10010011";
+    string file_name = "../palindrome_detector_2tapes.tm";
+    string input = "1001001";
     bool verbose = true;
     vector<string> syntax;
     ifstream in_file(file_name, ios::in);

@@ -59,15 +59,13 @@ private:
             do {
                 int offset = j - bases[i];
                 index.append(to_string(abs(offset)));
-                if (abs(offset) >=0 && abs(offset) <= 9)
-                    index.append("  ");
-                else index.append(" ");
+                index.append(" ");
                 tape.append(1, tapes[i][j]);
-                tape.append("  ");
+                tape.append(to_string(abs(offset)).length(), ' ');
                 if (j == positions[i])
                     head.append("^");
                 else head.append(" ");
-                head.append("  ");
+                head.append(to_string(abs(offset)).length(), ' ');
                 j++;
             } while (j <= right);
             cout << index <<endl << tape << endl << head << endl;
@@ -183,7 +181,6 @@ public:
                     string old_characters = line_copy.substr(0, pos);
                     transitions.emplace_back(old_state + old_characters, line_copy.substr(pos + 1));
                 }
-                // cout << line << endl;
             }
         }
     }
