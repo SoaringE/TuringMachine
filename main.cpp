@@ -2,9 +2,8 @@
 
 int main() {
     string file_name = "../case2.tm";
-    string input;
-    input.append(99, '1');
-    bool verbose = false;
+    string input = "111111111";
+    bool verbose = true;
     vector<string> syntax;
     ifstream in_file(file_name, ios::in);
     if (!in_file) {

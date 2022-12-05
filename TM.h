@@ -187,6 +187,7 @@ public:
 
     void read(string &input, bool verbose) {
         step = 0;
+        current_state = start_state;
         tapes = vector<string>(tape_number, "___");
         tapes[0] = "_" + input + "_";
         positions = vector<int>(tape_number, 1);
