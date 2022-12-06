@@ -6,8 +6,6 @@
 
 void TM::verbose_output() {
     cout << "Step   : " << step << endl;
-    if (step == 16)
-        cout << "find" <<endl;
     step++;
     cout << "State  : " << current_state << endl;
     for (int i = 0; i < tape_number; ++i) {
@@ -63,8 +61,8 @@ TM::TM() {
 }
 
 TM::TM(vector<string> &syntax) {
-    // TODO: parse syntax
     step = 0;
+    bool set1 = false, set2 = false, set3 = false, set4 = false, set5 = false, set6 = false, set7 = false;
     for (string line : syntax) {
         if (line.empty() or line[line.find_first_not_of(' ')] == ';')
             continue;
@@ -72,41 +70,78 @@ TM::TM(vector<string> &syntax) {
             line = line.substr(0, line.find(';'));
             line = line.substr(line.find_first_not_of(' '));
             if (line.find("#Q") == 0) {
+                set1 = true;
                 unsigned int pos = line.find('{') + 1;
+
+                if (pos >= line.length() || line.find('}') == line.length()) {
+                    cerr << "syntax error" << endl;
+                    exit(-1);
+                }
+
                 while (pos < line.length()) {
+                    if (line[pos] == ' ') {
+                        ++pos;
+                        continue;
+                    }
                     string state;
                     for(; line[pos] != ',' && line[pos] != '}'; ++pos) {
                         state.push_back(line[pos]);
                     }
-                    // TODO: Check if state is valid
                     states.insert(state);
                     ++pos;
                 }
             } else if (line.find("#S") == 0) {
+                set2 = true;
                 unsigned int pos = line.find('{') + 1;
+
+                if (pos >= line.length() || line.find('}') == line.length()) {
+                    cerr << "syntax error" << endl;
+                    exit(-1);
+                }
+
                 while (pos < line.length()) {
+                    if (line[pos] == ' ') {
+                        ++pos;
+                        continue;
+                    }
                     string symbol;
                     for(; line[pos] != ',' && line[pos] != '}'; ++pos) {
                         symbol.push_back(line[pos]);
                     }
-                    // TODO: Check if state is valid
                     if (symbol.length() == 1)
                         input_alphabet.insert(symbol[0]);
                     ++pos;
                 }
             } else if (line.find("#G") == 0) {
+                set3 = true;
                 unsigned int pos = line.find('{') + 1;
+
+                if (pos >= line.length() || line.find('}') == line.length()) {
+                    cerr << "syntax error" << endl;
+                    exit(-1);
+                }
+
                 while (pos < line.length()) {
+                    if (line[pos] == ' ') {
+                        ++pos;
+                        continue;
+                    }
                     string symbol;
                     for(; line[pos] != ',' && line[pos] != '}'; ++pos) {
                         symbol.push_back(line[pos]);
                     }
-                    // TODO: Check if state is valid
                     if (symbol.length() == 1)
                         tape_alphabet.insert(symbol[0]);
                     ++pos;
                 }
+                for (char c : input_alphabet) {
+                    if (tape_alphabet.find(c) == tape_alphabet.end()) {
+                        cerr << "syntax error" << endl;
+                        exit(-1);
+                    }
+                }
             } else if (line.find("#q0") == 0) {
+                set4 = true;
                 unsigned int pos = line.find('=') + 1;
                 while (pos < line.length()) {
                     if (line[pos] != ' ')
@@ -115,6 +150,7 @@ TM::TM(vector<string> &syntax) {
                 }
                 current_state = start_state;
             } else if (line.find("#B") == 0) {
+                set5 = true;
                 unsigned int pos = line.find('=') + 1;
                 string temp;
                 while (pos < line.length()) {
@@ -125,8 +161,19 @@ TM::TM(vector<string> &syntax) {
                 if (temp.length() == 1)
                     blank = temp[0];
             } else if (line.find("#F") == 0) {
+                set6 = true;
                 unsigned int pos = line.find('{') + 1;
+
+                if (pos >= line.length() || line.find('}') == line.length()) {
+                    cerr << "syntax error" << endl;
+                    exit(-1);
+                }
+
                 while (pos < line.length()) {
+                    if (line[pos] == ' ') {
+                        ++pos;
+                        continue;
+                    }
                     string state;
                     for(; line[pos] != ',' && line[pos] != '}'; ++pos) {
                         state.push_back(line[pos]);
@@ -135,6 +182,7 @@ TM::TM(vector<string> &syntax) {
                     ++pos;
                 }
             } else if (line.find("#N") == 0) {
+                set7 = true;
                 unsigned int pos = line.find('=') + 1;
                 string temp;
                 while (pos < line.length()) {
@@ -143,7 +191,7 @@ TM::TM(vector<string> &syntax) {
                     ++pos;
                 }
                 tape_number = stoi(temp);
-            } else {
+            } else if (count(line.begin(), line.end(), ' ') == 4) {
                 string line_copy = line;
                 unsigned int pos = line_copy.find(' ');
                 string old_state = line_copy.substr(0, pos);
@@ -152,8 +200,15 @@ TM::TM(vector<string> &syntax) {
                 pos = line_copy.find(' ');
                 string old_characters = line_copy.substr(0, pos);
                 transitions.emplace_back(old_state + old_characters, line_copy.substr(pos + 1));
+            } else {
+                cerr << "syntax error" << endl;
+                exit(-1);
             }
         }
+    }
+    if (!(set1 && set2 && set3 && set4 && set5 && set6 && set7)) {
+        cerr << "syntax error" << endl;
+        exit(-1);
     }
 }
 
@@ -200,6 +255,8 @@ void TM::read(string &input, bool verbose) {
         unsigned int pos = 0;
         for (; pos < transitions.size(); ++pos) {
             string rule = transitions[pos].first;
+            if (rule.substr(0, rule.find(' ')) != current.substr(0, current.find(' ')))
+                continue;
             for (int i = 0; i < current.size(); ++i) {
                 if (rule[i] == '*')
                     rule[i] = current[i];
@@ -234,11 +291,6 @@ void TM::read(string &input, bool verbose) {
                 if (positions[i] == tapes[i].length() - 1 && tapes[i][positions[i]] != '_')
                     tapes[i] = tapes[i] + "_";
                 current_state = target.substr(target.find_last_of(' ') + 1);
-            }
-            if (end_states.find(current_state) != end_states.end()) {
-                stop = true;
-                if (verbose)
-                    verbose_output();
             }
         }
     }

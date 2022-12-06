@@ -6,6 +6,7 @@ int main(int argc, char* argv[]) {
     string input;
     bool verbose;
 
+    // parse args
     if (argc == 1) {
         cerr << "invalid usage" << endl;
         exit(-1);
