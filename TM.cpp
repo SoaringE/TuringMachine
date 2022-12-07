@@ -69,6 +69,7 @@ TM::TM(vector<string> &syntax) {
         else {
             line = line.substr(0, line.find(';'));
             line = line.substr(line.find_first_not_of(' '));
+            line = line.substr(0, line.find_last_not_of(' ') + 1);
             if (line.find("#Q") == 0) {
                 set1 = true;
                 unsigned int pos = line.find('{') + 1;
@@ -258,7 +259,7 @@ void TM::read(string &input, bool verbose) {
             if (rule.substr(0, rule.find(' ')) != current.substr(0, current.find(' ')))
                 continue;
             for (int i = 0; i < current.size(); ++i) {
-                if (rule[i] == '*')
+                if (rule[i] == '*' && current[i] != '_')
                     rule[i] = current[i];
             }
             if (rule == current)
